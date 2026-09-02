@@ -132,6 +132,42 @@ para ninguém perder tempo pelo caminho errado.
 
 ---
 
+## Tabela de tokens
+
+O analisador léxico percorre o fonte uma única vez e registra linha e coluna
+a partir de 1. Nas regras abaixo, `letra` significa `[A-Za-z_]` e `digito`
+significa `[0-9]`.
+
+| Tipo de token | Lexemas ou regra de reconhecimento |
+|---|---|
+| `ID` | `letra (letra ou digito)*`, desde que o lexema não seja reservado |
+| `INTEIRO` | `digito+` |
+| `REAL` | `digito+ '.' digito+` |
+| `LOGICO` | `verdadeiro` ou `falso` |
+| `TEXTO` | `"` seguido de caracteres da mesma linha ou escapes `\\n`, `\\t`, `\\"`, `\\\\`, e outro `"` |
+| `FUNCAO`, `RETORNE`, `SE`, `SENAO` | `funcao`, `retorne`, `se`, `senao` |
+| `ENQUANTO`, `ESCREVA` | `enquanto`, `escreva` |
+| `TIPO_INTEIRO`, `TIPO_REAL` | `inteiro`, `real` |
+| `TIPO_LOGICO`, `TIPO_TEXTO`, `TIPO_VAZIO` | `logico`, `texto`, `vazio` |
+| `E`, `OU`, `NAO` | `e`, `ou`, `nao` |
+| `MAIS`, `MENOS`, `VEZES`, `DIVIDE`, `RESTO` | `+`, `-`, `*`, `/`, `%` |
+| `IGUAL`, `DIFERENTE` | `==`, `!=` |
+| `MENOR`, `MENOR_IGUAL`, `MAIOR`, `MAIOR_IGUAL` | `<`, `<=`, `>`, `>=` |
+| `ATRIBUI` | `=` |
+| `ABRE_PAR`, `FECHA_PAR` | `(`, `)` |
+| `ABRE_CHAVE`, `FECHA_CHAVE` | `{`, `}` |
+| `VIRGULA`, `PONTO_VIRGULA` | `,`, `;` |
+| `FIM_ARQUIVO` | fim da entrada, com lexema vazio |
+
+Espaços, tabulações e quebras de linha apenas separam tokens. Comentários
+`//` vão até o fim da linha; comentários `/* ... */` podem atravessar linhas e
+terminam no primeiro `*/`. Operadores de dois caracteres são testados antes
+dos de um caractere. Ponto sem dígitos dos dois lados, escape desconhecido,
+texto ou comentário não fechado e qualquer outro caractere não reconhecido
+produzem erro léxico na primeira ocorrência inválida.
+
+---
+
 ## Como entregar
 
 1. `git push` no repositório do grupo.
