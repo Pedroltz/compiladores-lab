@@ -59,6 +59,43 @@ errado no contrato e só descobrir rodando.
 | [E4](entregas/E4.md) | Código intermediário, geração e VM | 18/11 | 16/11 | 1,8 |
 | [Apres.](entregas/APRESENTACAO.md) | Demonstração e defesa | 25/11 | 23/11 | 1,0 |
 
+## Gramática implementada
+
+```ebnf
+programa       = { funcao } , EOF ;
+funcao         = "funcao" , tipo , ID , "(" , [ parametros ] , ")" , bloco ;
+parametros     = parametro , { "," , parametro } ;
+parametro      = tipo-sem-vazio , ID ;
+tipo           = "inteiro" | "real" | "logico" | "texto" | "vazio" ;
+bloco          = "{" , { comando } , "}" ;
+comando        = bloco | declaracao | atribuicao | chamada , ";" | se
+               | enquanto | escreva | retorne ;
+declaracao     = tipo-sem-vazio , ID , [ "=" , expressao ] , ";" ;
+atribuicao     = ID , "=" , expressao , ";" ;
+se             = "se" , "(" , expressao , ")" , bloco , [ "senao" , bloco ] ;
+enquanto       = "enquanto" , "(" , expressao , ")" , bloco ;
+escreva        = "escreva" , "(" , expressao , ")" , ";" ;
+retorne        = "retorne" , [ expressao ] , ";" ;
+chamada        = ID , "(" , [ argumentos ] , ")" ;
+
+expressao      = ou ;
+ou             = e , { "ou" , e } ;
+e              = igualdade , { "e" , igualdade } ;
+igualdade      = relacional , { ( "==" | "!=" ) , relacional } ;
+relacional     = aditiva , { ( "<" | "<=" | ">" | ">=" ) , aditiva } ;
+aditiva        = multiplicativa , { ( "+" | "-" ) , multiplicativa } ;
+multiplicativa = unaria , { ( "*" | "/" | "%" ) , unaria } ;
+unaria         = ( "nao" | "-" ) , unaria | primario ;
+primario       = literal | ID , [ "(" , [ argumentos ] , ")" ]
+               | "(" , expressao , ")" ;
+argumentos     = expressao , { "," , expressao } ;
+literal        = INTEIRO | REAL | LOGICO | TEXTO ;
+```
+
+A precedência é codificada pelos não-terminais encadeados, do `ou` (mais
+fraco) ao `primario` (mais forte); as repetições produzem associação à esquerda
+nos binários, enquanto a recursão de `unaria` à direita trata `nao` e `-`.
+
 São **quatro entregas sobre o mesmo compilador**, não quatro trabalhos. O que
 vocês escreverem na E1 continua rodando na E4 — e o verificador da E4 confere
 tudo o que veio antes. Deixar a E1 pela metade custa caro em novembro.
