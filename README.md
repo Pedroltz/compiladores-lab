@@ -3,6 +3,8 @@
 Trabalho semestral de **Compiladores** — Ciência da Computação, UNISAGRADO.
 Prof. Luiz Ricardo Mantovani da Silva · 2026-2
 
+**Grupo 3** · Bruno Bomfim Lima, Pedro Luiz Tunin e Raphal Michelassi
+
 Cada grupo escreve um **compilador completo** para a MPL, uma linguagem
 pequena de palavras-chave em português. O compilador de vocês vai ler um
 programa em `.mpl`, atravessar as quatro fases da disciplina e produzir um
@@ -276,7 +278,7 @@ Para o ensaio da alteração ao vivo, um exercício do enunciado é aceitar
 em `Analisador.comando` e a emissão em `Tradutor.comando`. Ensaiem com dois
 argumentos e rodem `make verificar E=4` para conferir o caso de um argumento.
 
-[Slides da apresentação](entregas/apresentacao-grupo-NN.pdf)
+[Slides da apresentação do Grupo 3](entregas/apresentacao-grupo-03.pdf)
 
 ## Como entregar
 

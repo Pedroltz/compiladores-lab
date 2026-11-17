@@ -269,8 +269,13 @@ def analisar(tokens):
                   nome=nome.lexema, tipo=retorno)
 
     funcoes = []
-    while atual().tipo != 'FIM_ARQUIVO':
-        funcoes.append(funcao())
+    try:
+        while atual().tipo != 'FIM_ARQUIVO':
+            funcoes.append(funcao())
+    except RecursionError:
+        token = atual()
+        raise ErroMPL('sintatico', token.linha, token.coluna,
+                      'programa excede o limite de aninhamento sintatico') from None
     fim = esperar('FIM_ARQUIVO')
     return No('programa', funcoes, linha=1 if funcoes else fim.linha,
               coluna=1 if funcoes else fim.coluna)
@@ -279,7 +284,9 @@ def analisar(tokens):
 def despejar(no, nivel=0, saida=None):
     """Imprime a arvore no formato do --ast. Ja esta pronto: dois espacos por nivel."""
     saida = saida if saida is not None else []
-    saida.append('  ' * nivel + no.rotulo)
-    for f in no.filhos:
-        despejar(f, nivel + 1, saida)
+    pendentes = [(no, nivel)]
+    while pendentes:
+        atual, profundidade = pendentes.pop()
+        saida.append('  ' * profundidade + atual.rotulo)
+        pendentes.extend((filho, profundidade + 1) for filho in reversed(atual.filhos))
     return saida

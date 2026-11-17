@@ -133,5 +133,5 @@ def executar(texto_mplb, saida):
         raise ErroMPL('execucao', linha, coluna, 'divisao ou resto por zero') from None
     except OverflowError:
         raise ErroMPL('execucao', linha, coluna, 'valor numerico fora do intervalo') from None
-    except (IndexError, KeyError, TypeError, ValueError):
+    except (IndexError, KeyError, RecursionError, TypeError, ValueError):
         raise ErroMPL('execucao', linha, coluna, 'arquivo MPLB invalido') from None

@@ -1,13 +1,8 @@
-"""
-A linha de comando do compilador. Ja vem pronta — nao precisa mexer.
-
-Ela existe para que ninguem perca nota por causa do contrato: os codigos de
-saida, o formato da mensagem de erro e os modos de despejo ja estao certos
-aqui. Voces preenchem as fases; isto aqui costura.
-"""
+"""Linha de comando do compilador e da máquina virtual."""
 import sys
+from pathlib import Path
 
-from mplc.erros import ErroMPL, NaoImplementado
+from mplc.erros import ErroMPL
 from mplc import lexico, sintatico, semantica, intermediario, gerador, vm
 
 MODOS = {'--tokens': 'tokens', '--ast': 'ast', '--tabela': 'tabela', '--ir': 'ir'}
@@ -23,16 +18,34 @@ def compilar_ate(fonte, ate):
     if ate == 'ast':
         return sintatico.despejar(arvore)
 
-    tabela = semantica.analisar(arvore)
-    if ate == 'tabela':
-        return semantica.despejar(tabela)
+    try:
+        tabela = semantica.analisar(arvore)
+        if ate == 'tabela':
+            return semantica.despejar(tabela)
 
-    codigo = intermediario.gerar(arvore, tabela)
-    if ate == 'ir':
-        return intermediario.despejar(codigo)
+        codigo = intermediario.gerar(arvore, tabela)
+        if ate == 'ir':
+            return intermediario.despejar(codigo)
 
-    return gerador.gerar(codigo)
+        return gerador.gerar(codigo)
+    except RecursionError:
+        raise ErroMPL('semantico', arvore.linha, arvore.coluna,
+                      'programa excede o limite de profundidade da compilacao') from None
 
+
+def normalizar_quebras(texto):
+    return texto.replace('\r\n', '\n').replace('\r', '\n')
+
+
+def ler_utf8(caminho, fase):
+    dados = Path(caminho).read_bytes()
+    try:
+        return normalizar_quebras(dados.decode('utf-8'))
+    except UnicodeDecodeError as erro:
+        prefixo = normalizar_quebras(dados[:erro.start].decode('utf-8'))
+        linha = prefixo.count('\n') + 1
+        coluna = len(prefixo.rsplit('\n', 1)[-1]) + 1
+        raise ErroMPL(fase, linha, coluna, 'sequencia UTF-8 invalida') from None
 
 def main(argv):
     ate, rodar, arquivos = 'bytecode', False, []
@@ -52,12 +65,10 @@ def main(argv):
     caminho = arquivos[0]
     try:
         if rodar:
-            with open(caminho, encoding='utf-8') as f:
-                vm.executar(f.read(), sys.stdout)
+            vm.executar(ler_utf8(caminho, 'execucao'), sys.stdout)
             return 0
 
-        with open(caminho, encoding='utf-8') as f:
-            fonte = f.read()
+        fonte = ler_utf8(caminho, 'lexico')
         linhas = compilar_ate(fonte, ate)
 
         if ate == 'bytecode':
@@ -71,16 +82,12 @@ def main(argv):
     except ErroMPL as e:
         print(e, file=sys.stderr)
         return 2 if e.fase == 'execucao' else 1
-    except NaoImplementado as e:
-        print(f'ainda falta escrever: {e}', file=sys.stderr)
-        return 3
-    except FileNotFoundError:
-        print(f'nao achei o arquivo {caminho}', file=sys.stderr)
+    except OSError as e:
+        print(f'{e.filename or caminho}: {e.strerror}', file=sys.stderr)
         return 1
-    except RecursionError:
-        print('erro execucao: linha 1, coluna 1: estouro de pilha', file=sys.stderr)
-        return 2
 
 
 if __name__ == '__main__':
+    sys.stdout.reconfigure(encoding='utf-8')
+    sys.stderr.reconfigure(encoding='utf-8', errors='backslashreplace')
     sys.exit(main(sys.argv[1:]))

@@ -13,7 +13,3 @@ class ErroMPL(Exception):
 
     def __str__(self):
         return f"erro {self.fase}: linha {self.linha}, coluna {self.coluna}: {self.mensagem}"
-
-
-class NaoImplementado(Exception):
-    """Marca uma fase que ainda nao foi escrita. Some conforme voces avancam."""
