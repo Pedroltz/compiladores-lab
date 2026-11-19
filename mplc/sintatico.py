@@ -82,10 +82,11 @@ def analisar(tokens):
             esperar(token.tipo)
             valor = token.lexema
             if token.tipo == 'REAL':
+                # O arredondamento pertence ao despejo, o código usa o lexema.
                 valor = f'{float(valor):.6f}'
             return No(f'literal {literais[token.tipo]} {valor}',
                       linha=token.linha, coluna=token.coluna,
-                      tipo=literais[token.tipo], valor=valor)
+                      tipo=literais[token.tipo], valor=token.lexema)
         if token.tipo == 'ID':
             nome = esperar('ID')
             if not aceitar('ABRE_PAR'):

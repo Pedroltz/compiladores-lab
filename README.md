@@ -17,17 +17,17 @@ linguagem compilada por vocês.
 ## Comece por aqui
 
 ```bash
-git clone https://github.com/LuizRMSilva1973/compiladores-lab.git
+git clone https://github.com/Pedroltz/compiladores-lab.git
 cd compiladores-lab
 ```
 
 ```bash
-make verificar E=1
+make verificar E=4
+make exemplo
 ```
 
-Vai dar vermelho — é para dar. O esqueleto responde à linha de comando mas
-ainda não tem nenhuma fase escrita. O vermelho é o seu ponto de partida, e
-ele vai virando verde conforme vocês preenchem `mplc/`.
+O primeiro comando confere as quatro entregas. O segundo compila e executa
+o programa `exemplos/ola.mpl`.
 
 Não precisa instalar nada além do Python 3. Se o notebook de vocês der
 trabalho, o [Google Cloud Shell](https://shell.cloud.google.com) já vem com
@@ -67,6 +67,7 @@ funcao         = "funcao" , tipo , ID , "(" , [ parametros ] , ")" , bloco ;
 parametros     = parametro , { "," , parametro } ;
 parametro      = tipo-sem-vazio , ID ;
 tipo           = "inteiro" | "real" | "logico" | "texto" | "vazio" ;
+tipo-sem-vazio = "inteiro" | "real" | "logico" | "texto" ;
 bloco          = "{" , { comando } , "}" ;
 comando        = bloco | declaracao | atribuicao | chamada , ";" | se
                | enquanto | escreva | retorne ;
@@ -204,6 +205,78 @@ texto ou comentário não fechado e qualquer outro caractere não reconhecido
 produzem erro léxico na primeira ocorrência inválida.
 
 ---
+
+## Escopos e tipos
+
+Cada escopo guarda os símbolos em um dicionário ordenado por inserção e
+referencia seu pai, o que permite resolver nomes começando pelo bloco mais
+interno e preserva a ordem exigida no despejo. A primeira passagem coleta as
+assinaturas no escopo global para permitir chamadas a funções declaradas
+depois e recursão mútua. Na segunda, cada função tem um escopo para parâmetros
+e outro para o bloco do corpo, e seus blocos internos recebem escopos próprios.
+Cada uso de variável recebe seu símbolo resolvido e cada declaração ganha um
+local distinto, o que preserva o sombreamento na geração de código.
+
+O inicializador de uma variável é analisado antes de a declaração entrar no
+escopo. A promoção de inteiro para real fica marcada na expressão em que é
+necessária. Por exemplo, em `real x = 7 / 2;`, a VM divide dois inteiros e
+só depois converte o quociente para real.
+
+## Código intermediário e conjunto de instruções
+
+O IR usa `v<escopo>_<posição>` para locais, `t<n>` para temporários e
+`L<n>` para rótulos. Cada função no arquivo `.mplb` começa com um registro
+`FUNCAO` que identifica seu nome e os locais dos parâmetros. As instruções
+seguintes são listas JSON com linha, coluna, operação e argumentos. Destinos
+de salto são índices de instrução na função atual, a partir de zero. Cada
+chamada tem seus próprios locais, contador de instruções e pilha de operandos,
+com até 1024 registros de ativação simultâneos.
+
+| Instrução | Efeito na pilha e na execução |
+|---|---|
+| `CONST valor` | Empilha um valor literal. |
+| `CARREGUE local` | Empilha o valor do local ou temporário. |
+| `GUARDE local` | Desempilha um valor e grava no local ou temporário. |
+| `UNARIO op` | Desempilha o operando e empilha o resultado de `-` ou `nao`. |
+| `BINARIO op` | Desempilha primeiro o operando direito, depois o esquerdo, e empilha o resultado. |
+| `REAL` | Desempilha um inteiro e empilha sua conversão para real. |
+| `DESVIE índice` | Salta para o índice na função atual, com a pilha intacta. |
+| `SE_FALSO índice` | Desempilha um lógico e salta se ele for falso. |
+| `CHAME nome quantidade` | Retira os argumentos na ordem em que foram empilhados e cria uma ativação com os parâmetros preenchidos. |
+| `RETORNE tem_valor` | Encerra a ativação e empilha no chamador o valor desempilhado, ou `null` se o retorno for vazio. |
+| `DESCARTE` | Desempilha o resultado de uma chamada usada como comando. |
+| `ESCREVA` | Desempilha e imprime um valor seguido de quebra de linha. |
+
+## Programa de demonstração
+
+`corrida.mpl` calcula o tempo total de três etapas de uma prova de
+regularidade e classifica cada etapa pelo limite de tempo. Também mostra a
+conversão da resolução de um sensor de segundos para microssegundos. A saída
+esperada está registrada no repositório. [Programa](exemplos/corrida.mpl) ·
+[Saída esperada](exemplos/corrida.saida)
+
+```bash
+./compilar exemplos/corrida.mpl
+./executar exemplos/corrida.mplb | diff -u exemplos/corrida.saida -
+```
+
+## Defesa
+
+Uma divisão sugerida para os cinco minutos da apresentação:
+
+| Tempo | Demonstração |
+|---|---|
+| 0:00–0:30 | Bruno compila e executa `corrida.mpl`. |
+| 0:30–2:15 | Pedro mostra os tokens, a árvore e os escopos da linha 3. |
+| 2:15–3:45 | Raphal relaciona os temporários do IR às instruções do `.mplb`. |
+| 3:45–5:00 | Bruno reproduz o arredondamento e mostra o valor corrigido. |
+
+Para o ensaio da alteração ao vivo, um exercício do enunciado é aceitar
+`escreva(a, b);`. Percorram o parser em `comando`, a checagem dos filhos
+em `Analisador.comando` e a emissão em `Tradutor.comando`. Ensaiem com dois
+argumentos e rodem `make verificar E=4` para conferir o caso de um argumento.
+
+[Slides da apresentação](entregas/apresentacao-grupo-NN.pdf)
 
 ## Como entregar
 
