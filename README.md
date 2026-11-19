@@ -3,7 +3,7 @@
 Trabalho semestral de **Compiladores** — Ciência da Computação, UNISAGRADO.
 Prof. Luiz Ricardo Mantovani da Silva · 2026-2
 
-**Grupo 3** · Bruno Bomfim Lima, Pedro Luiz Tunin e Raphal Michelassi
+**Grupo 3** · Bruno Bomfim Lima, Pedro Luiz Tunin e Raphael Michelassi
 
 Cada grupo escreve um **compilador completo** para a MPL, uma linguagem
 pequena de palavras-chave em português. O compilador de vocês vai ler um
@@ -270,7 +270,7 @@ Uma divisão sugerida para os cinco minutos da apresentação:
 |---|---|
 | 0:00–0:30 | Bruno compila e executa `corrida.mpl`. |
 | 0:30–2:15 | Pedro mostra os tokens, a árvore e os escopos da linha 3. |
-| 2:15–3:45 | Raphal relaciona os temporários do IR às instruções do `.mplb`. |
+| 2:15–3:45 | Raphael relaciona os temporários do IR às instruções do `.mplb`. |
 | 3:45–5:00 | Bruno reproduz o arredondamento e mostra o valor corrigido. |
 
 Para o ensaio da alteração ao vivo, um exercício do enunciado é aceitar
